@@ -8,32 +8,40 @@ season_players_dict = {'season_id' : [], 'player_id' : [], 'team_id' : [], 'poin
 trophies_dict = {'trophy_id' : [], 'trophy_name' : []}
 player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : []}
 
-def scrape_team(main_url):
+def scrape_team(main_url, the_dict):
     driver.get(main_url + "teams/")
     teams = driver.find_elements(By.XPATH, '//tbody/tr[@class="full_table"]')
     for item in teams:
         team_name_id = item.find_element(By.XPATH, './th/a')
         team_name = team_name_id.text
         team_id = team_name_id.get_attribute('href')[37:-1]
-        print(team_name)
-        print(team_id)
+        the_dict['team_id'].append(team_id)
+        the_dict['team_name'].append(team_name)
+        
         first_year = item.find_element(By.XPATH, './td[@data-stat="year_min"]').text
-        print(first_year)
+        the_dict['from'].append(first_year)
+        
         last_year = item.find_element(By.XPATH, './td[@data-stat="year_max"]').text
-        print(last_year)
+        the_dict['to'].append(last_year)
+        
         years = item.find_element(By.XPATH, './td[@data-stat="years"]').text
-        print(years)
+        the_dict['years'].append(years)
+        
         games = item.find_element(By.XPATH, './td[@data-stat="g"]').text
-        print(games)
+        the_dict['games'].append(games)
+        
         wins = item.find_element(By.XPATH, './td[@data-stat="wins"]').text
-        print(wins)
+        the_dict['wins'].append(wins)
+        
         losses = item.find_element(By.XPATH, './td[@data-stat="losses"]').text
-        print(losses)
+        the_dict['losses'].append(losses)
+        
         win_loss_percent = item.find_element(By.XPATH, './td[@data-stat="win_loss_pct"]').text
-        print(win_loss_percent)
+        the_dict['W/L_percent'].append(win_loss_percent)
+        
         years_league_champion = item.find_element(By.XPATH, './td[@data-stat="years_league_champion"]').text
-        print(years_league_champion)
-        print('----------------------------------------')
+        the_dict['years_league_champion'].append(years_league_champion)
+
         
 def scrape_player(url, next_url):
     driver.get(url + next_url)
