@@ -2,6 +2,12 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 
+season_dict = {'season_id' : [], 'season_champion_team' : []}
+teams_dict = {'team_id' : [], 'team_name' : [], 'from' : [], 'to' : [], 'years' : [], 'games' : [], 'wins' : [], 'losses' : [], 'W/L_percent' : [] , 'years_league_champion' : []}
+season_players_dict = {'season_id' : [], 'player_id' : [], 'team_id' : [], 'points' : []}
+trophies_dict = {'trophy_id' : [], 'trophy_name' : []}
+player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : []}
+
 def scrape_team(main_url):
     driver.get(main_url + "teams/")
     teams = driver.find_elements(By.XPATH, '//tbody/tr[@class="full_table"]')
