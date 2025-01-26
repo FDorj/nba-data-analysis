@@ -1,6 +1,8 @@
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
+import pandas as pd
+import openpyxl
 
 season_dict = {'season_id' : [], 'season_champion_team' : []}
 teams_dict = {'team_id' : [], 'team_name' : [], 'from' : [], 'to' : [], 'years' : [], 'games' : [], 'wins' : [], 'losses' : [], 'W/L_percent' : [] , 'years_league_champion' : []}
@@ -51,6 +53,11 @@ def scrape_player(url, season_id, season_player_dict, player_trophy_dict):
     driver.get(url + next_url)
     row_num = 0
     for i in range(50):
+        check_row = driver.find_element(By.XPATH, '//tbody/tr').get_attribute('class')
+        if check_row == 'thead':
+            row_num += 1
+            continue
+        
         season_player_dict['season_id'].append(season_id)
         # print(row_num)
         player_id = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="name_display"]/a').get_attribute('href')[37:-5]
@@ -119,9 +126,21 @@ options.add_experimental_option('detach', True)
 
 driver = webdriver.Chrome(service=service, options=options)
 
-scrape_team(main_url)
+scrape_team(main_url, teams_dict)
 
-scrape_season(main_url)
+scrape_season(main_url, season_dict, season_players_dict, player_trophies_dict)
 
-scrape_awards(main_url)
+scrape_awards(main_url, trophies_dict)
+
+season_df = pd.DataFrame(season_dict)
+team_df = pd.DataFrame(teams_dict)
+award_df = pd.DataFrame(trophies_dict)
+season_players_df = pd.DataFrame(season_players_dict)
+player_trophies_df = pd.DataFrame(player_trophies_dict)
+
+season_df.to_excel('season.xlsx')
+team_df.to_excel('team.xlsx')
+award_df.to_excel('award.xlsx')
+season_players_df.to_excel('season_player.xlsx')
+player_trophies_df.to_excel('player_trophy.xlsx')
 
