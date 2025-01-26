@@ -68,18 +68,20 @@ def scrape_player(url, season_id, season_player_dict, player_trophy_dict):
                 player_trophy_dict['trophy_id'].append(trophy_id)
                 player_trophy_dict['trophy_rank'].append(trophy_rank)
 
-        player_team = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="team_name_abbr"]/a')
-        player_team_id = player_team.get_attribute('href')[37:-10]
-        season_player_dict['team_id'].append(player_team_id)
-        
+
         player_points = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="pts"]').text
         season_player_dict['points'].append(player_points)
-
+        
+        player_team = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="team_name_abbr"]')
         if player_team.text == '2TM':
-            row_num += 2
+            row_num += 4
+            player_team_id = '2TM'
         else:
             row_num += 1
-        print('---------------------')
+            player_team_id = player_team.find_element(By.XPATH, './a').get_attribute('href')[37:-10]
+        
+        season_player_dict['team_id'].append(player_team_id)
+
 
         
 def scrape_season(main_url, season_dict, season_player_dict, player_trophy_dict):
