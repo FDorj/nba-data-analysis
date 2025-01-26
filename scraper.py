@@ -6,12 +6,15 @@ season_dict = {'season_id' : [], 'season_champion_team' : []}
 teams_dict = {'team_id' : [], 'team_name' : [], 'from' : [], 'to' : [], 'years' : [], 'games' : [], 'wins' : [], 'losses' : [], 'W/L_percent' : [] , 'years_league_champion' : []}
 season_players_dict = {'season_id' : [], 'player_id' : [], 'team_id' : [], 'points' : []}
 trophies_dict = {'trophy_id' : [], 'trophy_name' : []}
-player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : []}
+player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : [], 'trophy_rank' : []}
 
 def scrape_team(main_url, the_dict):
+    
     driver.get(main_url + "teams/")
     teams = driver.find_elements(By.XPATH, '//tbody/tr[@class="full_table"]')
+    
     for item in teams:
+        
         team_name_id = item.find_element(By.XPATH, './th/a')
         team_name = team_name_id.text
         team_id = team_name_id.get_attribute('href')[37:-1]
@@ -43,27 +46,35 @@ def scrape_team(main_url, the_dict):
         the_dict['years_league_champion'].append(years_league_champion)
 
         
-def scrape_player(url, next_url):
+def scrape_player(url, season_id, season_player_dict, player_trophy_dict):
+    next_url = f"NBA_{season_id}_totals.html"
     driver.get(url + next_url)
     row_num = 0
     for i in range(50):
-
-        print(row_num)
+        season_player_dict['season_id'].append(season_id)
+        # print(row_num)
         player_id = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="name_display"]/a').get_attribute('href')[37:-5]
-        print(player_id)
+        season_player_dict['player_id'].append(player_id)
+        
+
         trophies = driver.find_elements(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="awards"]/a')
         for trophy in trophies:
             if(trophy.text != 'AS' and not('NBA' in trophy.text)):
                 trophy_str = trophy.text.split('-')
                 trophy_rank = trophy_str[1]
                 trophy_id = 'awards/' + trophy_str[0]
-                print(trophy_id)
-                print(trophy_rank)
+                player_trophy_dict['season_id'].append(season_id)
+                player_trophy_dict['player_id'].append(player_id)
+                player_trophy_dict['trophy_id'].append(trophy_id)
+                player_trophy_dict['trophy_rank'].append(trophy_rank)
+
         player_team = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="team_name_abbr"]/a')
         player_team_id = player_team.get_attribute('href')[37:-10]
+        season_player_dict['team_id'].append(player_team_id)
+        
         player_points = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="pts"]').text
-        print(player_points)
-        print(player_team_id)
+        season_player_dict['points'].append(player_points)
+
         if player_team.text == '2TM':
             row_num += 2
         else:
@@ -71,31 +82,30 @@ def scrape_player(url, next_url):
         print('---------------------')
 
         
-def scrape_season(main_url):
+def scrape_season(main_url, season_dict, season_player_dict, player_trophy_dict):
     for i in range(2, 13):
         url = main_url + "leagues/"
         driver.get(url) 
         season = driver.find_element(By.CSS_SELECTOR, f'tbody tr[data-row="{i}"] th a')
         season_splitted = season.get_attribute('href').split('/')
         season_id = season_splitted[-1][-9 : -5]
-        print(season_id) # both id and end year
+        # both id and end year
+        season_dict['season_id'].append(season_id)
         
         season_champion = driver.find_element(By.CSS_SELECTOR, f'tbody tr[data-row="{i}"] td[data-stat="champion"] a').get_attribute('href')
-        print(season_champion.replace(season_id, '')[37:-6])
+        season_dict['season_champion_team'].append(season_champion.replace(season_id, '')[37:-6])
         
-        next_url = f"NBA_{season_id}_totals.html"
-        scrape_player(url, next_url)
+        scrape_player(url, season_id, season_player_dict, player_trophy_dict)
         
-def scrape_awards(main_url):
+def scrape_awards(main_url, the_dict):
     url = main_url + "awards/"
     driver.get(url)
     nba_awards  = driver.find_elements(By.XPATH, '//div[@class=" forcefull"]/h2[text()="NBA & ABA Season Awards"]/following-sibling::p/a')
     for item in nba_awards:
         award_link = item.get_attribute('href')[37:-5]
-        print(award_link)
+        the_dict['trophy_id'].append(award_link)
         award_name = item.text
-        print(award_name)        
-        
+        the_dict['trophy_name'].append(award_name)        
 
 main_url = 'https://www.basketball-reference.com/'
 
