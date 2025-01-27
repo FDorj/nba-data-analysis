@@ -13,7 +13,7 @@ trophies_dict = {'trophy_id' : [], 'trophy_name' : []}
 player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : [], 'trophy_rank' : []}
 players_dict = {'player_id' : [], 'player_name' : [], 'player_first_year' : [], 'player_last_year' : [], 'player_pos' : [], 'player_height' : [], 'player_weight' : [], 'player_birth_date' :[]}
 
-def scrape_player(main_url, the_dict):
+def scrape_player_table(main_url, the_dict):
     url = main_url + "players/"
     
     for letter in string.ascii_lowercase:
@@ -28,8 +28,8 @@ def scrape_player(main_url, the_dict):
             player_detail = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/th/a | //tbody/tr[@data-row="{row_num}"]/th/strong/a')
             player_name = player_detail.text
             player_id = player_detail.get_attribute('href')[37:-5]
-            the_dict['id'].append(player_id)
-            the_dict['name'].append(player_name)
+            the_dict['player_id'].append(player_id)
+            the_dict['player_name'].append(player_name)
             
             player_first_year = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="year_min"]').text
             the_dict['player_first_year'].append(player_first_year)
@@ -174,7 +174,7 @@ scrape_season(main_url, season_dict, season_players_dict, player_trophies_dict)
 
 scrape_awards(main_url, trophies_dict)
 
-scrape_player(main_url, players_dict)
+scrape_player_table(main_url, players_dict)
 
 season_df = pd.DataFrame(season_dict)
 team_df = pd.DataFrame(teams_dict)
