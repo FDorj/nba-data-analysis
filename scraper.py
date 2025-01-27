@@ -3,12 +3,54 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.service import Service
 import pandas as pd
 import openpyxl
+import string
+
 
 season_dict = {'season_id' : [], 'season_champion_team' : []}
 teams_dict = {'team_id' : [], 'team_name' : [], 'from' : [], 'to' : [], 'years' : [], 'games' : [], 'wins' : [], 'losses' : [], 'W/L_percent' : [] , 'years_league_champion' : []}
 season_players_dict = {'season_id' : [], 'player_id' : [], 'team_id' : [], 'points' : []}
 trophies_dict = {'trophy_id' : [], 'trophy_name' : []}
 player_trophies_dict = {'player_id' : [], 'season_id' : [], 'trophy_id' : [], 'trophy_rank' : []}
+players_dict = {'player_id' : [], 'player_name' : [], 'player_first_year' : [], 'player_last_year' : [], 'player_pos' : [], 'player_height' : [], 'player_weight' : [], 'player_birth_date' :[]}
+
+def scrape_player(main_url, the_dict):
+    url = main_url + "players/"
+    
+    for letter in string.ascii_lowercase:
+        driver.get(url + letter + '/')
+        
+        players_number = int(driver.find_element(By.XPATH, '//div[@id="players_sh"]/h2').text.split(' ')[0])
+        row_num = 0
+        for i in range(players_number):
+            if(driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]').get_attribute('class') == 'thead'):
+                continue
+            
+            player_detail = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/th/a | //tbody/tr[@data-row="{row_num}"]/th/strong/a')
+            player_name = player_detail.text
+            player_id = player_detail.get_attribute('href')[37:-5]
+            the_dict['id'].append(player_id)
+            the_dict['name'].append(player_name)
+            
+            player_first_year = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="year_min"]').text
+            the_dict['player_first_year'].append(player_first_year)
+            
+            player_last_year = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="year_max"]').text
+            the_dict['player_last_year'].append(player_last_year)
+            
+            player_pos = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="pos"]').text
+            the_dict['player_pos'].append(player_pos)
+            
+            player_height = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="height"]').text
+            the_dict['player_height'].append(player_height)
+            
+            player_weight = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="weight"]').text
+            the_dict['player_weight'].append(player_weight)
+
+            player_birth_date = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/td[@data-stat="birth_date"]').get_attribute('csk')
+            the_dict['player_birth_date'].append(player_birth_date)
+
+            row_num += 1
+            
 
 def scrape_team(main_url, the_dict):
     
@@ -132,15 +174,20 @@ scrape_season(main_url, season_dict, season_players_dict, player_trophies_dict)
 
 scrape_awards(main_url, trophies_dict)
 
+scrape_player(main_url, players_dict)
+
 season_df = pd.DataFrame(season_dict)
 team_df = pd.DataFrame(teams_dict)
 award_df = pd.DataFrame(trophies_dict)
 season_players_df = pd.DataFrame(season_players_dict)
 player_trophies_df = pd.DataFrame(player_trophies_dict)
+player_df = pd.DataFrame(players_dict)
+
 
 season_df.to_excel('season.xlsx')
 team_df.to_excel('team.xlsx')
 award_df.to_excel('award.xlsx')
 season_players_df.to_excel('season_player.xlsx')
 player_trophies_df.to_excel('player_trophy.xlsx')
+player_df.to_excel('players.xlsx')
 
