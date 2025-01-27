@@ -23,6 +23,7 @@ def scrape_player_table(main_url, the_dict):
         row_num = 0
         for i in range(players_number):
             if(driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]').get_attribute('class') == 'thead'):
+                row_num += 1
                 continue
             
             player_detail = driver.find_element(By.XPATH, f'//tbody/tr[@data-row="{row_num}"]/th/a | //tbody/tr[@data-row="{row_num}"]/th/strong/a')
